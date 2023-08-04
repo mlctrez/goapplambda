@@ -10,6 +10,7 @@ Example of how to deploy go-app application using s3, lambda, and cloudfront.
 * Create a cloudfront distribution with the default origin pointing to the lambda function url.
 * Add an origin to the cloudfront distribution for the s3 bucket.
 * Add a behavior matching /web/* to be routed to the s3 bucket origin.
+* Create a cloudfront function applied to the /web/* behavior to set the wasm size header. (goapplambda-wasmsize in this example) 
 * Optionally, add a custom CNAME and SSL certificate to be used instead of the default xxx.cloudfront.net name.
 
 ## demo
