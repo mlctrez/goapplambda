@@ -57,6 +57,15 @@ func Deploy() (err error) {
 		return
 	}
 
+	// E1T21UEDW4RGGJ
+
+	if err = sh.Run("aws", "cloudfront", "create-invalidation",
+		"--distribution-id", "E1T21UEDW4RGGJ",
+		"--paths", "/*",
+	); err != nil {
+		return
+	}
+
 	lambdaArgs := []string{
 		"lambda", "update-function-code", "--function-name", "goapplambda",
 		"--zip-file", "fileb://temp/goapp.zip", "--output", "text",
