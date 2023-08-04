@@ -57,11 +57,8 @@ func Deploy() (err error) {
 		return
 	}
 
-	// E1T21UEDW4RGGJ
-
 	if err = sh.Run("aws", "cloudfront", "create-invalidation",
-		"--distribution-id", "E1T21UEDW4RGGJ",
-		"--paths", "/*",
+		"--distribution-id", "E1T21UEDW4RGGJ", "--paths", "/*",
 	); err != nil {
 		return
 	}
