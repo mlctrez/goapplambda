@@ -61,19 +61,6 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 	}
 	engine.Use(gin.Recovery())
 
-	engine.Use(func(c *gin.Context) {
-		m := map[string]string{}
-		for k, v := range c.Request.Header {
-			if strings.ToLower(k) == "host" || strings.ToLower(k) == "via" {
-				continue
-			}
-			m[k] = v[0]
-		}
-		c.Next()
-	})
-	// https://www.google.com/maps/@38.74720,-90.72470,15z?entry=ttu
-	// "Cloudfront-Viewer-Latitude": "38.74720",	//    "Cloudfront-Viewer-Longitude": "-90.72470"
-
 	engine.GET("/app.css", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/web/app.css")
 	})
@@ -96,6 +83,9 @@ func setupApiEndpoints(engine *gin.Engine) error {
 	engine.GET("/api/headers", func(context *gin.Context) {
 		m := map[string]string{}
 		for k, v := range context.Request.Header {
+			if strings.ToLower(k) == "host" || strings.ToLower(k) == "via" {
+				continue
+			}
 			m[k] = v[0]
 		}
 		context.JSON(http.StatusOK, m)
