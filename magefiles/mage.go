@@ -111,6 +111,7 @@ function handler(event) {
 	if err = sh.Run("aws", "cloudfront", "publish-function",
 		"--name", "goapplambda-wasmsize",
 		"--if-match", fd.ETag,
+		"--output", "text",
 	); err != nil {
 		return
 	}
