@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -63,6 +64,9 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 	engine.Use(func(c *gin.Context) {
 		m := map[string]string{}
 		for k, v := range c.Request.Header {
+			if strings.ToLower(k) == "host" || strings.ToLower(k) == "via" {
+				continue
+			}
 			m[k] = v[0]
 		}
 		c.Next()
