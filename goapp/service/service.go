@@ -81,7 +81,9 @@ func setupApiEndpoints(engine *gin.Engine) error {
 		for _, s := range environ {
 			n := strings.SplitN(s, "=", 2)
 			if len(n) == 2 {
-				m[n[0]] = n[1]
+				if !strings.Contains(n[0], "AWS") {
+					m[n[0]] = n[1]
+				}
 			}
 		}
 		context.JSON(http.StatusOK, m)
