@@ -52,20 +52,22 @@ func Deploy() (err error) {
 		return
 	}
 
-	s3Args := []string{"s3", "sync", "web", "s3://mlctrez-goapplambda/web"}
-	if err = sh.Run("aws", s3Args...); err != nil {
+	if err = sh.Run("aws", "s3", "sync",
+		"web", "s3://mlctrez-goapplambda/web"); err != nil {
 		return
 	}
 
 	if err = sh.Run("aws", "cloudfront", "create-invalidation",
 		"--distribution-id", "E1T21UEDW4RGGJ", "--paths", "/*",
+		"--output", "text",
 	); err != nil {
 		return
 	}
 
 	lambdaArgs := []string{
 		"lambda", "update-function-code", "--function-name", "goapplambda",
-		"--zip-file", "fileb://temp/goapp.zip", "--output", "text",
+		"--zip-file", "fileb://temp/goapp.zip",
+		"--output", "text",
 	}
 
 	// 	aws lambda update-function-code --function-name goapplambda --zip-file fileb://temp/goapp.zip --output text
