@@ -61,11 +61,6 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 	engine.Use(gin.Recovery())
 
 	engine.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Wasm-Content-Length", goapp.WasmSize)
-		c.Next()
-	})
-
-	engine.Use(func(c *gin.Context) {
 		m := map[string]string{}
 		for k, v := range c.Request.Header {
 			m[k] = v[0]
@@ -120,7 +115,7 @@ func setupGoAppHandler(engine *gin.Engine) (err error) {
 		ThemeColor:              "#000",
 		Styles:                  []string{"/web/style.css"},
 		Title:                   "go-app lambda demo",
-		Description:             "demonstrates deployment of go-app on aws lambda url and s3",
+		Description:             "demonstrates deployment of go-app on aws lambda and s3",
 		Author:                  "mlctrez@gmail.com",
 		Keywords:                []string{"go-app", "lambda", "aws"},
 		HTML:                    nil,

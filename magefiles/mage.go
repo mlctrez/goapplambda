@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/magefile/mage/sh"
 	"os"
@@ -57,6 +58,63 @@ func Deploy() (err error) {
 		return
 	}
 
+	var stat os.FileInfo
+	if stat, err = os.Stat(WasmPath); err != nil {
+		return err
+	}
+
+	var functionTemplate = `
+function handler(event) {
+	var response = event.response;
+	var headers = response.headers;
+
+	headers['wasm-content-length'] = { value: '%d'};
+
+	return response;
+}`
+
+	functionCode := fmt.Sprintf(functionTemplate, stat.Size())
+	if err = os.WriteFile("temp/wasmsize.js", []byte(functionCode), 0755); err != nil {
+		return
+	}
+
+	/*
+		aws cloudfront update-function \
+		    --name ExampleFunction \
+		    --function-config Comment="Example function",Runtime="cloudfront-js-1.0" \
+		    --function-code fileb://function.js \
+		    --if-match ETVABCEXAMPLE
+	*/
+	var functionDescription string
+	if functionDescription, err = sh.Output("aws", "cloudfront", "describe-function",
+		"--name", "goapplambda-wasmsize"); err != nil {
+		return
+	}
+
+	fd := &FunctionDescription{}
+	if err = json.Unmarshal([]byte(functionDescription), fd); err != nil {
+		return
+	}
+
+	if functionDescription, err = sh.Output("aws", "cloudfront", "update-function",
+		"--name", "goapplambda-wasmsize",
+		"--function-config", `Comment="wasm size function",Runtime="cloudfront-js-1.0"`,
+		"--function-code", `fileb://temp/wasmsize.js`,
+		"--if-match", fd.ETag,
+	); err != nil {
+		return
+	}
+	if err = json.Unmarshal([]byte(functionDescription), fd); err != nil {
+		return
+	}
+
+	if err = sh.Run("aws", "cloudfront", "publish-function",
+		"--name", "goapplambda-wasmsize",
+		"--if-match", fd.ETag,
+	); err != nil {
+		return
+	}
+
 	if err = sh.Run("aws", "cloudfront", "create-invalidation",
 		"--distribution-id", "E1T21UEDW4RGGJ", "--paths", "/*",
 		"--output", "text",
@@ -76,6 +134,10 @@ func Deploy() (err error) {
 	}
 
 	return nil
+}
+
+type FunctionDescription struct {
+	ETag string `json:"ETag"`
 }
 
 func mkTemp() error      { return os.MkdirAll("temp", 0755) }
@@ -123,7 +185,7 @@ func buildWasm() (err error) {
 	// -ldflags
 
 	var ldFlags string
-	if ldFlags, err = buildLdFlags(false); err != nil {
+	if ldFlags, err = buildLdFlags(); err != nil {
 		return
 	}
 
@@ -134,24 +196,16 @@ func buildWasm() (err error) {
 
 }
 
-func buildLdFlags(withSize bool) (string, error) {
+func buildLdFlags() (string, error) {
 	var ldFlags string
 	ldFlags += "-w"
 	ldFlags += fmt.Sprintf(" -X %s/goapp.Version=%s", moduleName, gitInfo.Version)
 	ldFlags += fmt.Sprintf(" -X %s/goapp.Commit=%s", moduleName, gitInfo.Commit)
-	if withSize {
-		stat, err := os.Stat(WasmPath)
-		if err != nil {
-			return "", err
-		}
-		ldFlags += fmt.Sprintf(" -X %s/goapp.WasmSize=%d", moduleName, stat.Size())
-	}
-	//fmt.Println(ldFlags)
 	return ldFlags, nil
 }
 
 func buildBinary() error {
-	ldFlags, err := buildLdFlags(true)
+	ldFlags, err := buildLdFlags()
 	if err != nil {
 		return err
 	}

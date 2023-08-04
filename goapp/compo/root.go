@@ -13,6 +13,7 @@ type Root struct {
 
 func (r *Root) Render() app.UI {
 	return app.Div().Body(
+		app.P().Text("goapplambda demo application"),
 		app.P().Body(
 			app.A().Href("https://github.com/mlctrez/goapplambda").Text("goapplambda on github"),
 		),
