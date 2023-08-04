@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -73,6 +74,19 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 
 func setupApiEndpoints(engine *gin.Engine) error {
 	// setup other api endpoints here
+	engine.GET("/api/environment", func(context *gin.Context) {
+
+		m := map[string]string{}
+		environ := os.Environ()
+		for _, s := range environ {
+			n := strings.SplitN(s, "=", 2)
+			if len(n) == 2 {
+				m[n[0]] = n[1]
+			}
+		}
+		context.JSON(http.StatusOK, m)
+
+	})
 	return nil
 }
 
