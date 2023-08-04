@@ -3,7 +3,6 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/abihf/delta/v2"
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -68,16 +66,14 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 	})
 
 	engine.Use(func(c *gin.Context) {
-
 		m := map[string]string{}
-		m["remoteIP"] = c.RemoteIP()
 		for k, v := range c.Request.Header {
 			m[k] = v[0]
 		}
-		jd, _ := json.Marshal(m)
-		fmt.Println(string(jd))
 		c.Next()
 	})
+	// https://www.google.com/maps/@38.74720,-90.72470,15z?entry=ttu
+	// "Cloudfront-Viewer-Latitude": "38.74720",	//    "Cloudfront-Viewer-Longitude": "-90.72470"
 
 	engine.GET("/app.css", func(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/web/app.css")
@@ -97,21 +93,15 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 
 func setupApiEndpoints(engine *gin.Engine) error {
 	// setup other api endpoints here
-	engine.GET("/api/environment", func(context *gin.Context) {
 
+	engine.GET("/api/headers", func(context *gin.Context) {
 		m := map[string]string{}
-		environ := os.Environ()
-		for _, s := range environ {
-			n := strings.SplitN(s, "=", 2)
-			if len(n) == 2 {
-				if !strings.Contains(n[0], "AWS") {
-					m[n[0]] = n[1]
-				}
-			}
+		for k, v := range context.Request.Header {
+			m[k] = v[0]
 		}
 		context.JSON(http.StatusOK, m)
-
 	})
+
 	return nil
 }
 

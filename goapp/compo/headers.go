@@ -7,18 +7,18 @@ import (
 	"strings"
 )
 
-type Environ struct {
+type Headers struct {
 	app.Compo
 	envMap map[string]string
 }
 
-func (r *Environ) Render() app.UI {
+func (r *Headers) Render() app.UI {
 
 	var rows []app.UI
 	if r.envMap != nil {
 		rows = append(rows, app.Tr().Body(
-			app.Th().Attr("align", "left").Text("ENV_VAR"),
-			app.Th().Attr("align", "left").Text("VALUE")),
+			app.Th().Attr("align", "left").Text("Header"),
+			app.Th().Attr("align", "left").Text("Value")),
 		)
 		for k, v := range r.envMap {
 			rows = append(rows, app.Tr().Body(app.Td().Text(k), app.Td().Text(v)))
@@ -28,9 +28,9 @@ func (r *Environ) Render() app.UI {
 	return app.Table().Body()
 }
 
-func (r *Environ) OnMount(ctx app.Context) {
+func (r *Headers) OnMount(ctx app.Context) {
 	target := app.Window().Get("location").Get("href").String()
-	target = strings.TrimSuffix(target, "/") + "/api/environment"
+	target = strings.TrimSuffix(target, "/") + "/api/headers"
 
 	resp, err := http.Get(target)
 	if err != nil {

@@ -18,7 +18,7 @@ func (r *Root) Render() app.UI {
 		),
 		app.P().Text("GOAPP_VERSION = "+app.Getenv("GOAPP_VERSION")),
 		app.P().Text("DEV = "+app.Getenv("DEV")),
-		&Environ{},
+		&Headers{},
 	)
 }
 
