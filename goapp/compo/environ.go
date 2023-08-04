@@ -16,7 +16,10 @@ func (r *Environ) Render() app.UI {
 
 	var rows []app.UI
 	if r.envMap != nil {
-		rows = append(rows, app.Tr().Body(app.Th().Text("ENV_VAR"), app.Td().Text("VALUE")))
+		rows = append(rows, app.Tr().Body(
+			app.Th().Attr("align", "left").Text("ENV_VAR"),
+			app.Th().Attr("align", "left").Text("VALUE")),
+		)
 		for k, v := range r.envMap {
 			rows = append(rows, app.Tr().Body(app.Td().Text(k), app.Td().Text(v)))
 		}
