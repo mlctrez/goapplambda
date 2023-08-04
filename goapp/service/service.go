@@ -3,6 +3,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/abihf/delta/v2"
 	"github.com/gin-gonic/gin"
@@ -60,6 +61,28 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 		engine.Use(gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: skipPaths}))
 	}
 	engine.Use(gin.Recovery())
+
+	engine.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Wasm-Content-Length", goapp.WasmSize)
+		c.Next()
+	})
+
+	engine.Use(func(c *gin.Context) {
+
+		m := map[string]string{}
+		m["remoteIP"] = c.RemoteIP()
+		for k, v := range c.Request.Header {
+			m[k] = v[0]
+		}
+		jd, _ := json.Marshal(m)
+		fmt.Println(string(jd))
+		c.Next()
+	})
+
+	engine.GET("/app.css", func(c *gin.Context) {
+		c.Redirect(http.StatusTemporaryRedirect, "/web/app.css")
+	})
+
 	// setupStaticHandlers
 	setups := []engineSetup{setupApiEndpoints, setupGoAppHandler}
 
@@ -126,14 +149,6 @@ func setupGoAppHandler(engine *gin.Engine) (err error) {
 		handler.AutoUpdateInterval = time.Hour
 		handler.Version = fmt.Sprintf("%s@%s", goapp.Version, goapp.Commit)
 	}
-	engine.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Wasm-Content-Length", goapp.WasmSize)
-		c.Next()
-	})
-
-	engine.GET("/app.css", func(c *gin.Context) {
-		c.Redirect(http.StatusTemporaryRedirect, "/web/app.css")
-	})
 
 	engine.NoRoute(gin.WrapH(handler))
 	return nil
