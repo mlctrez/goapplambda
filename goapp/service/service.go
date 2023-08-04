@@ -3,6 +3,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/abihf/delta/v2"
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,23 @@ var IsDev = DevEnv != ""
 
 type engineSetup func(*gin.Engine) error
 
+func jsonLoggerMiddleware() gin.HandlerFunc {
+	return gin.LoggerWithFormatter(
+		func(params gin.LogFormatterParams) string {
+			log := make(map[string]interface{})
+
+			log["status_code"] = params.StatusCode
+			log["path"] = params.Path
+			log["method"] = params.Method
+			log["start_time"] = params.TimeStamp.Format("2006/01/02 - 15:04:05")
+			log["remote_addr"] = params.ClientIP
+			log["response_time"] = params.Latency.String()
+
+			s, _ := json.Marshal(log)
+			return string(s) + "\n"
+		},
+	)
+}
 func buildGinEngine() (engine *gin.Engine, err error) {
 
 	if !IsDev {
@@ -58,6 +76,8 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 			"/app.css", "/app.js", "/app-worker.js", "/manifest.webmanifest", "/wasm_exec.js",
 			"/web/logo-192.png", "/web/logo-512.png", "/web/logo.svg", "/web/app.wasm"}
 		engine.Use(gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: skipPaths}))
+	} else {
+		engine.Use(jsonLoggerMiddleware())
 	}
 	engine.Use(gin.Recovery())
 
