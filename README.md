@@ -12,6 +12,8 @@ Example of how to deploy go-app application using s3, lambda, and cloudfront.
 * Add a behavior matching /web/* to be routed to the s3 bucket origin.
 * Optionally, add a custom CNAME and SSL certificate to be used instead of the default xxx.cloudfront.net name.
 
+## demo
+[example deployment](https://goapplambda.mlctrez.com/)
 
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/mlctrez/goapplambda)](https://goreportcard.com/report/github.com/mlctrez/goapplambda)

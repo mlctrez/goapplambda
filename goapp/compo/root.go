@@ -13,6 +13,9 @@ type Root struct {
 
 func (r *Root) Render() app.UI {
 	return app.Div().Body(
+		app.P().Body(
+			app.A().Href("https://github.com/mlctrez/goapplambda").Text("goapplambda on github"),
+		),
 		app.P().Text("GOAPP_VERSION = "+app.Getenv("GOAPP_VERSION")),
 		app.P().Text("DEV = "+app.Getenv("DEV")),
 		&Environ{},
