@@ -3,8 +3,6 @@
 package service
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/abihf/delta/v2"
 	"github.com/gin-gonic/gin"
@@ -14,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 )
 
@@ -98,30 +95,11 @@ func setupApiEndpoints(engine *gin.Engine) error {
 	// setup other api endpoints here
 
 	engine.GET("/api/headers", func(context *gin.Context) {
-
-		var keys []string
-		for k := range context.Request.Header {
-			keys = append(keys, k)
+		m := map[string]string{}
+		for k, v := range context.Request.Header {
+			m[k] = v[0]
 		}
-		sort.Strings(keys)
-
-		var buf bytes.Buffer
-		buf.WriteString("{")
-		for i, key := range keys {
-			if i != 0 {
-				buf.WriteString(",")
-			}
-			k, _ := json.Marshal(key)
-			buf.Write(k)
-			buf.WriteString(":")
-			val, _ := json.Marshal(context.Request.Header[key][0])
-			buf.Write(val)
-		}
-
-		buf.WriteString("}")
-
-		context.Header("Content-Type", "application/json")
-		context.String(http.StatusOK, buf.String())
+		context.JSON(http.StatusOK, m)
 	})
 
 	return nil
