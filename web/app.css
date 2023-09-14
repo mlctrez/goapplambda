@@ -23,6 +23,10 @@
     background-color: #000;
 }
 
+a:visited {
+    color: cadetblue;
+}
+
 @media (prefers-color-scheme: light) {
     .goapp-app-info {
         color: cadetblue;

@@ -17,12 +17,6 @@ import (
 	"time"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("helloHandler")
-	fmt.Println(r.URL.Path)
-	_, _ = w.Write([]byte("hello world!"))
-}
-
 func Entry() {
 	compo.Routes()
 
@@ -73,8 +67,7 @@ func buildGinEngine() (engine *gin.Engine, err error) {
 	if IsDev {
 		// omit some common paths to reduce startup logging noise
 		skipPaths := []string{
-			"/app.css", "/app.js", "/app-worker.js", "/manifest.webmanifest", "/wasm_exec.js",
-			"/web/logo-192.png", "/web/logo-512.png", "/web/logo.svg", "/web/app.wasm"}
+			"/app.css", "/app.js", "/app-worker.js", "/manifest.webmanifest", "/wasm_exec.js", "/web/app.wasm"}
 		engine.Use(gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: skipPaths}))
 	} else {
 		engine.Use(jsonLoggerMiddleware())
@@ -117,14 +110,8 @@ func setupApiEndpoints(engine *gin.Engine) error {
 func setupGoAppHandler(engine *gin.Engine) (err error) {
 
 	handler := &app.Handler{
-		Name:      "goapplambda",
-		ShortName: "goapplambda",
-		Icon: app.Icon{
-			Default:    "/web/logo-192.png",
-			Large:      "/web/logo-512.png",
-			SVG:        "/web/logo.svg",
-			AppleTouch: "/web/logo-192.png",
-		},
+		Name:                    "goapplambda",
+		ShortName:               "goapplambda",
 		BackgroundColor:         "#222",
 		ThemeColor:              "#000",
 		Styles:                  []string{"/web/style.css"},
@@ -132,9 +119,6 @@ func setupGoAppHandler(engine *gin.Engine) (err error) {
 		Description:             "demonstrates deployment of go-app on aws lambda and s3",
 		Author:                  "mlctrez@gmail.com",
 		Keywords:                []string{"go-app", "lambda", "aws"},
-		HTML:                    nil,
-		Body:                    nil,
-		AutoUpdateInterval:      0,
 		Env:                     app.Environment{},
 		WasmContentLengthHeader: "Wasm-Content-Length",
 	}
@@ -149,6 +133,14 @@ func setupGoAppHandler(engine *gin.Engine) (err error) {
 		handler.Version = fmt.Sprintf("%s@%s", goapp.Version, goapp.Commit)
 	}
 
-	engine.NoRoute(gin.WrapH(handler))
+	goAppHandler := gin.WrapH(handler)
+
+	goAppUrls := []string{
+		"/", "/web/:path", "/app.js", "/app-worker.js", "/manifest.webmanifest", "/wasm_exec.js",
+	}
+	for _, url := range goAppUrls {
+		engine.GET(url, goAppHandler)
+	}
+
 	return nil
 }

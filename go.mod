@@ -1,12 +1,13 @@
 module github.com/mlctrez/goapplambda
 
-go 1.20
+go 1.21
 
 require (
 	github.com/abihf/delta/v2 v2.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/magefile/mage v1.15.0
-	github.com/maxence-charriere/go-app/v9 v9.7.3
+	github.com/maxence-charriere/go-app/v9 v9.8.0
+	marwan.io/wasm-fetch v0.1.0
 )
 
 require (

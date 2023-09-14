@@ -41,15 +41,14 @@ func Run() error {
 		return err
 	}
 	env := map[string]string{"DEV": "1"}
-
-	return sh.RunWith(env, "temp/goapp")
+	return sh.RunWith(env, "temp/bootstrap")
 }
 
 func Deploy() (err error) {
 	if err = Build(); err != nil {
 		return
 	}
-	if err = sh.Run("zip", "-j", "temp/goapp.zip", "temp/goapp"); err != nil {
+	if err = sh.Run("zip", "-j", "temp/bootstrap.zip", "temp/bootstrap"); err != nil {
 		return
 	}
 
@@ -123,9 +122,10 @@ function handler(event) {
 		return
 	}
 
+	// this is now amazon linux 2 runtime
 	lambdaArgs := []string{
 		"lambda", "update-function-code", "--function-name", "goapplambda",
-		"--zip-file", "fileb://temp/goapp.zip",
+		"--zip-file", "fileb://temp/bootstrap.zip",
 		"--output", "text",
 	}
 
@@ -212,7 +212,7 @@ func buildBinary() error {
 	}
 	env := map[string]string{"CGO_ENABLED": "0"}
 	return sh.RunWith(env, "go", "build",
-		"-o", "temp/goapp",
+		"-o", "temp/bootstrap",
 		"-ldflags", ldFlags,
 		"goapp/service/main/main.go")
 }

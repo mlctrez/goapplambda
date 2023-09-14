@@ -1,11 +1,8 @@
 package compo
 
 import (
-	"encoding/json"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
-	"net/http"
 	"sort"
-	"strings"
 )
 
 type Headers struct {
@@ -36,23 +33,4 @@ func (r *Headers) Render() app.UI {
 		return app.Table().Body(rows...)
 	}
 	return app.Table().Body()
-}
-
-func (r *Headers) OnMount(ctx app.Context) {
-	target := app.Window().Get("location").Get("href").String()
-	target = strings.TrimSuffix(target, "/") + "/api/headers"
-
-	resp, err := http.Get(target)
-	if err != nil {
-		app.Log(err)
-		return
-	}
-	m := map[string]string{}
-	err = json.NewDecoder(resp.Body).Decode(&m)
-	if err != nil {
-		app.Log(err)
-		return
-	}
-	r.headerMap = m
-	r.Update()
 }
